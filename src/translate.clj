@@ -267,6 +267,7 @@
           slurp
           ;; TODO: reading form?
           ;;(circle.util.core/read-seq :safe? false)
+          read-string
           (list!)
           (walk)
           (indent)))))
@@ -274,7 +275,8 @@
 (defn do-rewrite [file]
   (-> file
       transform
-      (->> (spit file))))
+      (->>
+       (spit file))))
 
 #_(defn revert [file]
   (sh/shq! (git checkout ~file)))
@@ -298,7 +300,7 @@
       (re-find #"\(fact" (slurp file))))
 
 (defn rewrite-all []
-  (let [files (->> (java.io.File. "test/")
+  (let [files (->> (java.io.File. "/Users/dliman/getaroom/price_sheet/test/")
                    (ns/find-clojure-sources-in-dir )
                    (filter midje?))]
     (doseq [f (take 1 files)]
@@ -307,3 +309,5 @@
         (catch Throwable t
           (.printStackTrace t)
           (println "FAILED:" f))))))
+
+(rewrite-all)
