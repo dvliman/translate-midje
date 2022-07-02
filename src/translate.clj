@@ -5,6 +5,7 @@
             [clojure.core.match :refer (match)]
             [clojure.string :as str]
             [bultitude.core :as bultitude]
+            [clojure.java.io]
             #_[circle.sh :as sh]
             #_[circle.util.ns :refer (set-public!)]
             #_[circle.util.predicates :refer (regex?)]
@@ -279,12 +280,12 @@
           ;; TODO: reading form?
           ;;(circle.util.core/read-seq :safe? false)
           read-seq
-          #break (list!)
+          (list!)
           (walk)
           (indent)))))
 
 (defn do-rewrite [file]
-  (-> file
+  #dbg (-> file
       transform
       (->>
        (spit file))))
@@ -320,5 +321,6 @@
         (catch Throwable t
           (.printStackTrace t)
           (println "FAILED:" f))))))
+
 
 (rewrite-all)
