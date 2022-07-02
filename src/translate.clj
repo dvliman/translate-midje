@@ -9,7 +9,8 @@
             #_[circle.util.ns :refer (set-public!)]
             #_[circle.util.predicates :refer (regex?)]
             #_[circle.util.re :refer (re)]
-            #_[circle.util.core :refer (third)]))
+            #_[circle.util.core :refer (third)])
+  (:import java.io.PushbackReader))
 
 (defn re
   "Creates a regex from a string"
@@ -259,16 +260,26 @@
 (defn file->ns [file]
   (first (bultitude/namespaces-in-dir (file! file))))
 
+(defn read-seq
+  "Read all forms from *in* until an EOF is reached. Throws an exception on incomplete forms."
+  [stream]
+  (lazy-seq
+   (let [form (read stream false ::EOF)]
+     (when-not (= ::EOF form)
+       (cons form (read-seq stream))))))
+
 (defn transform [file]
   (let [ns (file->ns file)]
     (binding [*current-file* file
               *current-ns* ns]
       (-> file
-          slurp
+          clojure.java.io/reader
+          (PushbackReader.)
+          ;;slurp
           ;; TODO: reading form?
           ;;(circle.util.core/read-seq :safe? false)
-          read-string
-          (list!)
+          read-seq
+          #break (list!)
           (walk)
           (indent)))))
 
@@ -300,7 +311,7 @@
       (re-find #"\(fact" (slurp file))))
 
 (defn rewrite-all []
-  (let [files (->> (java.io.File. "/Users/dliman/getaroom/price_sheet/test/")
+  (let [files (->> (java.io.File. "/Users/dliman/getaroom/price_sheet/test/price_sheet")
                    (ns/find-clojure-sources-in-dir )
                    (filter midje?))]
     (doseq [f (take 1 files)]
